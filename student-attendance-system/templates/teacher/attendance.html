@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}Input Absensi - Sistem Absensi{% endblock %}
+
+{% block content %}
+<div x-data="attendanceForm()">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Input Absensi</h1>
+        <div class="flex items-center space-x-4 mt-4 md:mt-0">
+            <input type="date" x-model="selectedDate" @change="loadAttendance()"
+                   class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+            <select x-model="selectedClass" @change="loadAttendance()"
+                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                <option value="">Pilih Kelas</option>
+                <template x-for="cls in classes" :key="cls.id">
+                    <option :value="cls.id" x-text="cls.name"></option>
+                </template>
+            </select>
+        </div>
+    </div>
+
+    <!-- Attendance Table -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">No</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">NIS</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Nama Siswa</th>
+                        <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Status</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <template x-for="(student, index) in students" :key="student.student_id">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 text-sm text-gray-600" x-text="index + 1"></td>
+                            <td class="px-4 py-3 text-sm text-gray-600" x-text="student.student_number"></td>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-800" x-text="student.student_name"></td>
+                            <td class="px-4 py-3">
+                                <div class="flex justify-center space-x-2">
+                                    <button @click="student.status = 'present'"
+                                            :class="student.status === 'present' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600'"
+                                            class="w-10 h-10 rounded-full text-sm font-semibold hover:opacity-80 transition">H</button>
+                                    <button @click="student.status = 'sick'"
+                                            :class="student.status === 'sick' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-600'"
+                                            class="w-10 h-10 rounded-full text-sm font-semibold hover:opacity-80 transition">S</button>
+                                    <button @click="student.status = 'permitted'"
+                                            :class="student.status === 'permitted' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'"
+                                            class="w-10 h-10 rounded-full text-sm font-semibold hover:opacity-80 transition">I</button>
+                                    <button @click="student.status = 'absent'"
+                                            :class="student.status === 'absent' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600'"
+                                            class="w-10 h-10 rounded-full text-sm font-semibold hover:opacity-80 transition">A</button>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <input type="text" x-model="student.remarks" placeholder="Keterangan..."
+                                       class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500">
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <div x-show="!students.length" class="p-8 text-center text-gray-500">
+            Pilih kelas untuk menampilkan daftar siswa
+        </div>
+
+        <!-- Save Button -->
+        <div x-show="students.length" class="p-4 bg-gray-50 border-t">
+            <button @click="saveAttendance()" :disabled="saving"
+                    class="w-full md:w-auto px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 transition">
+                <i class="fas fa-save mr-2"></i>
+                <span x-text="saving ? 'Menyimpan...' : 'Simpan Absensi'"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="mt-4 flex flex-wrap gap-4 text-sm text-gray-600">
+        <span><span class="inline-block w-6 h-6 bg-green-500 text-white rounded-full text-center mr-1">H</span> Hadir</span>
+        <span><span class="inline-block w-6 h-6 bg-yellow-500 text-white rounded-full text-center mr-1">S</span> Sakit</span>
+        <span><span class="inline-block w-6 h-6 bg-blue-500 text-white rounded-full text-center mr-1">I</span> Izin</span>
+        <span><span class="inline-block w-6 h-6 bg-red-500 text-white rounded-full text-center mr-1">A</span> Absen</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function attendanceForm() {
+    return {
+        selectedDate: new Date().toISOString().split('T')[0],
+        selectedClass: '',
+        classes: [],
+        students: [],
+        saving: false,
+
+        async init() {
+            // Load classes - simplified for now
+            this.classes = [
+                { id: 1, name: 'Kelas 1A' },
+                { id: 2, name: 'Kelas 1B' },
+                { id: 3, name: 'Kelas 2A' }
+            ];
+        },
+
+        async loadAttendance() {
+            if (!this.selectedClass) {
+                this.students = [];
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/attendance/class/${this.selectedClass}?date=${this.selectedDate}`);
+                const data = await response.json();
+                if (data.success) {
+                    this.students = data.attendance;
+                }
+            } catch (error) {
+                console.error('Error loading attendance:', error);
+            }
+        },
+
+        async saveAttendance() {
+            if (!this.selectedClass || !this.students.length) return;
+
+            this.saving = true;
+            try {
+                const records = this.students
+                    .filter(s => s.status)
+                    .map(s => ({
+                        student_id: s.student_id,
+                        status: s.status,
+                        remarks: s.remarks || ''
+                    }));
+
+                const response = await fetch('/api/attendance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        date: this.selectedDate,
+                        records: records
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Absensi berhasil disimpan!');
+                }
+            } catch (error) {
+                alert('Gagal menyimpan absensi');
+            } finally {
+                this.saving = false;
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Teacher Dashboard - Sistem Absensi{% endblock %}
+
+{% block content %}
+<div x-data="teacherDashboard()">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Dashboard Guru</h1>
+
+    <!-- Today's Info -->
+    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-md p-6 text-white mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-indigo-100">Hari ini</p>
+                <p class="text-2xl font-bold" x-text="today"></p>
+            </div>
+            <i class="fas fa-calendar-day text-4xl text-indigo-200"></i>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <a href="{{ url_for('teacher_attendance') }}" class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+            <div class="flex items-center">
+                <div class="p-4 bg-green-100 rounded-full">
+                    <i class="fas fa-clipboard-check text-2xl text-green-600"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="font-semibold text-gray-800">Input Absensi</h3>
+                    <p class="text-sm text-gray-500">Catat kehadiran siswa hari ini</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="{{ url_for('teacher_journal') }}" class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+            <div class="flex items-center">
+                <div class="p-4 bg-blue-100 rounded-full">
+                    <i class="fas fa-book text-2xl text-blue-600"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="font-semibold text-gray-800">Jurnal Harian</h3>
+                    <p class="text-sm text-gray-500">Catat materi pembelajaran</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Today's Schedule -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <h2 class="text-lg font-semibold text-gray-700 mb-4">
+            <i class="fas fa-clock mr-2"></i>Jadwal Hari Ini
+        </h2>
+        <div class="space-y-3">
+            <template x-for="schedule in todaySchedule" :key="schedule.id">
+                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <div class="text-center min-w-[80px]">
+                        <p class="text-sm font-semibold text-indigo-600" x-text="schedule.start_time"></p>
+                        <p class="text-xs text-gray-400" x-text="schedule.end_time"></p>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <p class="font-medium text-gray-800" x-text="schedule.subject"></p>
+                        <p class="text-sm text-gray-500" x-text="schedule.room ? 'Ruang: ' + schedule.room : ''"></p>
+                    </div>
+                </div>
+            </template>
+            <p x-show="!todaySchedule.length" class="text-gray-500 text-center py-4">
+                Tidak ada jadwal hari ini
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function teacherDashboard() {
+    return {
+        today: new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+        todaySchedule: [],
+        async init() {
+            const response = await fetch('/api/schedule/today');
+            const data = await response.json();
+            if (data.success) {
+                this.todaySchedule = data.schedules;
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

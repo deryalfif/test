@@ -1,0 +1,28 @@
+# Flask and extensions
+Flask==3.0.0
+Flask-Login==0.6.3
+Flask-Session==0.5.0
+Flask-WTF==1.2.1
+Werkzeug==3.0.1
+
+# Database
+SQLAlchemy==2.0.23
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.5
+
+# Google API
+google-api-python-client==2.108.0
+google-auth-httplib2==0.1.1
+google-auth-oauthlib==1.1.0
+
+# Report generation
+reportlab==4.0.7
+openpyxl==3.1.2
+
+# Utilities
+python-dotenv==1.0.0
+bcrypt==4.1.1
+email-validator==2.1.0
+
+# Production server
+gunicorn==21.2.0

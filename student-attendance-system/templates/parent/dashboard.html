@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Parent Dashboard - Sistem Absensi{% endblock %}
+
+{% block content %}
+<div x-data="parentDashboard()">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Dashboard Orang Tua</h1>
+
+    <!-- Child Info -->
+    <div class="bg-gradient-to-r from-green-500 to-teal-600 rounded-xl shadow-md p-6 text-white mb-6">
+        <div class="flex items-center">
+            <div class="p-4 bg-white bg-opacity-20 rounded-full">
+                <i class="fas fa-user-graduate text-3xl"></i>
+            </div>
+            <div class="ml-4">
+                <p class="text-green-100">Data Anak</p>
+                <p class="text-xl font-bold" x-text="childName || 'Memuat...'"></p>
+                <p class="text-green-100 text-sm" x-text="childClass || ''"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Summary -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-xl shadow-md p-4 text-center">
+            <div class="text-3xl font-bold text-green-600" x-text="attendance.present">0</div>
+            <div class="text-sm text-gray-500">Hadir</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-md p-4 text-center">
+            <div class="text-3xl font-bold text-yellow-600" x-text="attendance.sick">0</div>
+            <div class="text-sm text-gray-500">Sakit</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-md p-4 text-center">
+            <div class="text-3xl font-bold text-blue-600" x-text="attendance.permitted">0</div>
+            <div class="text-sm text-gray-500">Izin</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-md p-4 text-center">
+            <div class="text-3xl font-bold text-red-600" x-text="attendance.absent">0</div>
+            <div class="text-sm text-gray-500">Absen</div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <a href="{{ url_for('parent_attendance') }}" class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+            <div class="flex items-center">
+                <div class="p-4 bg-indigo-100 rounded-full">
+                    <i class="fas fa-calendar-alt text-2xl text-indigo-600"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="font-semibold text-gray-800">Riwayat Absensi</h3>
+                    <p class="text-sm text-gray-500">Lihat kehadiran anak</p>
+                </div>
+            </div>
+        </a>
+
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="flex items-center">
+                <div class="p-4 bg-purple-100 rounded-full">
+                    <i class="fas fa-percentage text-2xl text-purple-600"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="font-semibold text-gray-800">Persentase Kehadiran</h3>
+                    <p class="text-2xl font-bold text-purple-600" x-text="attendanceRate + '%'">0%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function parentDashboard() {
+    return {
+        childName: '',
+        childClass: '',
+        attendance: { present: 0, sick: 0, permitted: 0, absent: 0 },
+        attendanceRate: 0,
+        init() {
+            // Data akan dimuat dari API ketika child data tersedia
+            this.childName = 'Data akan ditampilkan';
+            this.childClass = 'setelah siswa terhubung';
+        }
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistem Absensi Siswa{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-100 min-h-screen" x-data="{ sidebarOpen: false }">
+    {% if current_user.is_authenticated %}
+    <!-- Mobile Header -->
+    <header class="bg-indigo-600 text-white lg:hidden fixed top-0 left-0 right-0 z-50">
+        <div class="flex items-center justify-between px-4 py-3">
+            <button @click="sidebarOpen = !sidebarOpen" class="text-white focus:outline-none">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+            <h1 class="text-lg font-semibold">Sistem Absensi</h1>
+            <a href="{{ url_for('auth.logout') }}" class="text-white">
+                <i class="fas fa-sign-out-alt text-xl"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="fixed inset-y-0 left-0 z-40 w-64 bg-indigo-700 transform transition-transform duration-300 lg:translate-x-0"
+           :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+        <div class="flex items-center justify-center h-16 bg-indigo-800">
+            <h1 class="text-white text-xl font-bold">Sistem Absensi</h1>
+        </div>
+
+        <nav class="mt-4">
+            <a href="{{ url_for('dashboard') }}" class="flex items-center px-6 py-3 text-indigo-100 hover:bg-indigo-600">
+                <i class="fas fa-home mr-3"></i>
+                Dashboard
+            </a>
+
+            {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('admin_users') }}" class="flex items-center px-6 py-3 text-indigo-100 hover:bg-indigo-600">
+                <i class="fas fa-users mr-3"></i>
+                Kelola Pengguna
+            </a>
+            <a href="{{ url_for('admin_classes') }}" class="flex items-center px-6 py-3 text-indigo-100 hover:bg-indigo-600">
+                <i class="fas fa-school mr-3"></i>
+                Kelola Kelas
+            </a>
+            {% endif %}
+
+            {% if current_user.role in ['admin', 'teacher'] %}
+            <a href="{{ url_for('teacher_attendance') }}" class="flex items-center px-6 py-3 text-indigo-100 hover:bg-indigo-600">
+                <i class="fas fa-clipboard-check mr-3"></i>
+                Absensi
+            </a>
+            <a href="{{ url_for('teacher_journal') }}" class="flex items-center px-6 py-3 text-indigo-100 hover:bg-indigo-600">
+                <i class="fas fa-book mr-3"></i>
+                Jurnal Harian
+            </a>
+            {% endif %}
+
+            {% if current_user.role == 'parent' %}
+            <a href="{{ url_for('parent_attendance') }}" class="flex items-center px-6 py-3 text-indigo-100 hover:bg-indigo-600">
+                <i class="fas fa-clipboard-list mr-3"></i>
+                Lihat Absensi
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('auth.profile') }}" class="flex items-center px-6 py-3 text-indigo-100 hover:bg-indigo-600">
+                <i class="fas fa-user mr-3"></i>
+                Profil
+            </a>
+        </nav>
+
+        <div class="absolute bottom-0 left-0 right-0 p-4 bg-indigo-800">
+            <div class="flex items-center text-indigo-200 text-sm">
+                <i class="fas fa-user-circle mr-2"></i>
+                <span>{{ current_user.full_name }}</span>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="mt-2 block text-indigo-300 hover:text-white text-sm">
+                <i class="fas fa-sign-out-alt mr-2"></i>Keluar
+            </a>
+        </div>
+    </aside>
+
+    <!-- Overlay -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+         x-show="sidebarOpen"
+         @click="sidebarOpen = false"
+         x-transition></div>
+
+    <!-- Main Content -->
+    <main class="lg:ml-64 min-h-screen pt-16 lg:pt-0">
+        <div class="p-4 lg:p-8">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="mb-4 space-y-2">
+                {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'success' %}bg-green-100 text-green-800{% elif category == 'danger' %}bg-red-100 text-red-800{% elif category == 'warning' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    {% else %}
+    <main class="min-h-screen">
+        {% block public_content %}{% endblock %}
+    </main>
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
