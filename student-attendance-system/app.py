@@ -54,13 +54,16 @@ def create_app(config_name=None):
     @app.route('/admin/users')
     @login_required
     def admin_users():
-        from auth.utils import admin_required
+        if current_user.role != 'admin':
+            return redirect(url_for('dashboard'))
         users = User.query.all()
         return render_template('admin/users.html', users=users)
 
     @app.route('/admin/classes')
     @login_required
     def admin_classes():
+        if current_user.role != 'admin':
+            return redirect(url_for('dashboard'))
         from database import Class
         classes = Class.query.all()
         return render_template('admin/classes.html', classes=classes)
